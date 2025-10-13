@@ -1,9 +1,7 @@
-function App() {
+import ProctorPageLayout from "./components/ProctorPageLayout";
+export default function App() {
+
   return (
-    <>
-      React Starter Template
-    </>
+    <ProctorPageLayout />
   )
 }
-
-export default App
