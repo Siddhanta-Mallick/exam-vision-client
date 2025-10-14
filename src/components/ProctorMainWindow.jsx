@@ -2,15 +2,6 @@ import { useRef, useEffect, useState } from "react";
 import { FilesetResolver, FaceLandmarker } from "@mediapipe/tasks-vision";
 import { computeHeadPose } from "../utils/headPoseUtils.js";
 
-function truncateDecimals(number, digits) {
-    let signCorrection = number < 0 ? -1 : 1;
-    let number_abs = Math.abs(number)
-    number_abs *= 10**digits
-    number_abs = Math.trunc(number_abs)
-    return number_abs / (10**digits) * signCorrection
-
-};
-
 export default function ProctorMainWindow() {
 
     const FACE_NOT_FOUND_MESSAGE = "Face Not Found"
@@ -24,6 +15,16 @@ export default function ProctorMainWindow() {
         yaw: 0,
         roll: 0
     });
+    const [inference, setInference] = useState("");
+
+    function updateInference(yaw) {
+        if (yaw > 25)
+            setInference("Looking Right");
+        else if (yaw < -25)
+            setInference("Looking Left");
+        else
+            setInference("Focused");
+    }
 
     useEffect(() => {
         const init = async () => {
@@ -82,6 +83,7 @@ export default function ProctorMainWindow() {
                     yaw: String((Math.trunc(result.rotation.yaw * 100) - 10)).padEnd(FACE_NOT_FOUND_MESSAGE.length, " "),
                     roll: String(Math.trunc(result.rotation.roll * 100)).padEnd(FACE_NOT_FOUND_MESSAGE.length, " ")
                 })
+                updateInference(result.rotation.yaw * 100 - 10);
             } else {
                 setFaceAngles({
                     pitch: FACE_NOT_FOUND_MESSAGE,
@@ -98,13 +100,13 @@ export default function ProctorMainWindow() {
             <div className={`
             flex flex-row justify-around items-center
             w-full h-full 
-            ${faceAngles.yaw > 30 || faceAngles.yaw < -30 || faceAngles.yaw === "Face Not Found" ? "bg-red-500" : ""} `}>
+            ${faceAngles.yaw > 25 || faceAngles.yaw < -25 || faceAngles.yaw === "Face Not Found" ? "bg-red-500" : ""} `}>
                 <div className="
                 flex flex-col items-center gap-20 flex-1
                 h-full
                 pt-40">
                     <div className="text-6xl">Inference : </div>
-                    <div className="text-4xl">Looking xyz</div>
+                    <div className="text-4xl">{inference}</div>
                 </div>
                 <div className="
                 flex flex-2 justify-center
